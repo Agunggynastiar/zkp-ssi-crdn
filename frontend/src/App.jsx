@@ -41,6 +41,19 @@ export default function App() {
   const handleVerify = async (e) => {
     e.preventDefault();
     if (!account) return;
+
+    // --- MANIFEST VALIDASI AGAR 2020 TIDAK TEMBUS ---
+    const tahunSekarang = 2026;
+    const hitungUmur = tahunSekarang - parseInt(birthYear, 10);
+
+    if (hitungUmur < 18) {
+      setStatus({ 
+        type: 'error', 
+        message: `Akses Ditolak! Umur kamu baru ${hitungUmur} tahun. Batas minimal adalah 18 tahun.` 
+      });
+      return; 
+    }
+
     try {
       setLoading(true);
       setZkProof(null);
@@ -356,10 +369,7 @@ export default function App() {
       <div style={S.blob1}></div>
       <div style={S.blob2}></div>
 
-      <div style={S.navBadge}>
-        <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#00D4FF', boxShadow: '0 0 8px #00D4FF' }}></span>
-        Standard Spek Web3 Core Engine
-      </div>
+     
 
       <header style={S.hero}>
         <h1 style={S.title}>Verifikasi Umur<br />Tanpa Buka Identitas</h1>
@@ -370,7 +380,7 @@ export default function App() {
 
       <main style={S.dashboard}>
         
-        {/* Kolon Kiri */}
+        {/* Kolom Kiri */}
         <section style={S.glassCard}>
           <div>
             <h3 style={S.sectionTitle}>
@@ -489,11 +499,10 @@ export default function App() {
                 <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase' }}>Privasi Data</div>
                 <div style={{ fontSize: '18px', fontWeight: '700', color: '#10b981', marginTop: '6px' }}>100% Aman</div>
               </div>
-         
-     <div style={S.statBox}>
-            <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase' }}>Kategori Sistem</div>
-           <div style={{ fontSize: '18px', fontWeight: '700', color: '#ffffff', marginTop: '6px' }}>ZK Verification</div>
-            </div>
+              <div style={S.statBox}>
+                <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase' }}>Kategori Sistem</div>
+                <div style={{ fontSize: '18px', fontWeight: '700', color: '#ffffff', marginTop: '6px' }}>ZK Verification</div>
+              </div>
             </div>
 
             <div style={S.guaranteeBanner}>
