@@ -1,33 +1,34 @@
-
 pragma circom 2.1.6;
 
-// Mengimpor library komparator resmi untuk operasi perbandingan matematika
 include "./node_modules/circomlib/circuits/comparators.circom";
 
 template AgeVerification() {
-    // 1. SIGNAL INPUT
-    signal input birthYear;      // PRIVATE: Rahasia, tidak boleh bocor ke blockchain/frontend
-    signal input currentYear;    // PUBLIC: Diketahui oleh pemeriksa
-    signal input ageLimit;       // PUBLIC: Batas minimal umur (18)
+    signal input birthYear;      
+    signal input currentYear;    
+    signal input ageLimit;       
 
-    // 2. SIGNAL OUTPUT
-    signal output isValid;       // PUBLIC: Bernilai 1 jika True (>=18), 0 jika False (<18)
-
-    // 3. LOGIKA INTERNAL
-    signal age;
+    // Kita tidak perlu signal output 'isValid' lagi, karena kalau tidak valid, 
+    // sirkuit akan langsung ERROR dan menolak membuat proof.
     
-    // Menghitung selisih umur
+    signal age;
+
+    // 1. Mencegah Underflow (Tahun Lahir TIDAK BOLEH lebih dari Tahun Sekarang)
+    // Komponen LessEqThan memastikan birthYear <= currentYear
+    component checkFuture = LessEqThan(16);
+    checkFuture.in[0] <== birthYear;
+    checkFuture.in[1] <== currentYear;
+    checkFuture.out === 1; // MEMAKSA HARUS TRUE
+
+    // 2. Menghitung umur
     age <== currentYear - birthYear;
 
-    // Komponen GreaterEqThan dengan kapasitas dekomposisi 8-bit (mendukung angka hingga 255)
+    // 3. Memeriksa Batas Umur
     component gte = GreaterEqThan(8);
-    
     gte.in[0] <== age;
     gte.in[1] <== ageLimit;
 
-    // Output dari sirkuit diikat dengan output dari komparator
-    isValid <== gte.out;
+    // MEMAKSA hasil komparasi HARUS 1 (True). Jika di bawah umur, proof gagal dibuat!
+    gte.out === 1; 
 }
 
-// Deklarasikan sinyal mana saja yang bersifat PUBLIC untuk diverifikasi on-chain nanti
 component main {public [currentYear, ageLimit]} = AgeVerification();
