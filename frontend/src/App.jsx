@@ -1,7 +1,23 @@
 import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { generateAgeProof } from './utils/zkp';
+// Taruh di bagian atas file App.jsx
+const CONTRACT_ADDRESS = "0xa43c94E997b95A9B7B9937125A60D0626bDa1C2B"; // <-- GANTI DENGAN ALAMAT KONTRAK UTAMAMU DARI REMIX!
 
+const CONTRACT_ABI = [
+  {
+    "inputs": [
+      {"internalType": "uint256[2]", "name": "a", "type": "uint256[2]"},
+      {"internalType": "uint256[2][2]", "name": "b", "type": "uint256[2][2]"},
+      {"internalType": "uint256[2]", "name": "c", "type": "uint256[2]"},
+      {"internalType": "uint256[2]", "name": "input", "type": "uint256[2]"}
+    ],
+    "name": "verifyProof",
+    "outputs": [{"internalType": "boolean", "name": "r", "type": "boolean"}],
+    "stateMutability": "view",
+    "type": "function"
+  }
+];
 export default function App() {
   const [account, setAccount] = useState(null);
   const [birthYear, setBirthYear] = useState('');
@@ -59,21 +75,23 @@ export default function App() {
       setZkProof(null);
       setStatus({ type: 'info', message: "Menyiapkan sirkuit. Lagi nge-generate bukti matematika Zero-Knowledge langsung di device kamu..." });
       
+      // 1. Generate bukti lokal via SnarkJS WASM
       const result = await generateAgeProof(birthYear);
       setZkProof(result.proof);
       setStatus({ type: 'success', message: "Bukti Zero-Knowledge (ZKP) beres dibuat dan lolos verifikasi lokal!" });
       setIsAccordionOpen(true);
+
+      // 2. KIRIM LANGSUNG KE BLOCKCHAIN SEPOLIA (Integrasi On-Chain)
+      setStatus({ type: 'info', message: "Mengirim bukti kriptografi ke Blockchain Sepolia via MetaMask..." });
+      
+      // Pastikan fungsi sendProofToBlockchain di bawah sudah kamu paste juga di App.jsx
+      await sendProofToBlockchain(result.proof, result.publicSignals);
+
     } catch (err) {
       setStatus({ type: 'error', message: err.message });
     } finally {
       setLoading(false);
     }
-  };
-
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   // --- STYLE ENGINE (Premium Web3 Theme) ---

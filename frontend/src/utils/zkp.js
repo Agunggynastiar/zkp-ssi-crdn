@@ -1,12 +1,11 @@
 // Import langsung dari node_modules (Standar Produksi Vite)
 import * as snarkjs from 'snarkjs';
 
-export async function generateAgeProof(birthYear) {
-  const currentYear = new Date().getFullYear();
-
- const circuitInput = {
-    birthYear: String(birthYear).trim(),
-    currentYear: String(currentYear).trim(),
+export const generateAgeProof = async (birthYear) => {
+  // 1. Definisikan input sirkuit secara lengkap (3 signal sesuai sirkuit baru)
+  const circuitInput = { 
+    birthYear: birthYear.toString(), 
+    currentYear: "2026", 
     ageLimit: "18" 
   };
 
@@ -14,10 +13,12 @@ export async function generateAgeProof(birthYear) {
   console.log("Mengirim Input ke Sirkuit Peran A:", circuitInput);
 
   try {
-    const wasmPath = `${window.location.origin}/age_verification.wasm`;
+    // 2. Sesuaikan nama file biner ZKP di folder frontend/public/
+    // Jika di folder public namamu 'age_verification.wasm', ganti 'circuit.wasm' di bawah menjadi 'age_verification.wasm'
+    const wasmPath = `${window.location.origin}/circuit.wasm`; 
     const zkeyPath = `${window.location.origin}/circuit_final.zkey`;
 
-    // Menggunakan snarkjs lokal, bukan window.snarkjs
+    // 3. Eksekusi pembuktian menggunakan engine snarkjs lokal
     const { proof, publicSignals } = await snarkjs.groth16.fullProve(
       circuitInput,
       wasmPath, 
@@ -25,9 +26,12 @@ export async function generateAgeProof(birthYear) {
     );
 
     console.log("ZKP Sukses Generated!");
+    
+    // 4. Return objek secara lengkap agar bisa dibaca oleh App.jsx
     return { proof, publicSignals, success: true };
+
   } catch (error) {
     console.error("EROR ASLI DARI ENGINES SNARKJS:", error);
     throw new Error(error.message || "Gagal mengeksekusi komputasi sirkuit ZKP.");
   }
-}
+};
